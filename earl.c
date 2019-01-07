@@ -17,7 +17,10 @@
 int main(int argc, char** argv)
 {
 
-	// TODO: arg validity checking
+	if(argc != 2){
+		fprintf(stderr,"Usage: earl <username or alias>\n");
+		exit(1);
+	}
 	
 	// DB struct pointer that will represent the alias DB
 	DB* aliases;
