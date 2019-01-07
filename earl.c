@@ -1,10 +1,9 @@
-// TODO: make matching handle multivalued values like vapehouse
+// TODO: find a way to free the forest after it's no longer of any use
 #include <stdio.h>
 #include <alloca.h>
 #include <string.h>
 #include <sys/types.h>
 #include <db.h>
-#include <getopt.h>
 #include <search.h>
 #include <stdlib.h>
 #define _GNU_SOURCE
@@ -146,9 +145,6 @@ int main(int argc, char** argv)
 	// Frees the memory that is associated with the structure of the hsearch map
 	hdestroy();
 
-	// Satisfy compiler warnings, TODO will be taken out when arg checking is
-	// implemented
-	(void)argc;
 	return 0;
 }
 

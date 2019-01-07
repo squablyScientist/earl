@@ -14,7 +14,7 @@
 aNode* newAliasNode(char* data){
 	// TODO check that mallocs were successful
 	aNode* new = calloc(1, sizeof(aNode));
-	strncpy(new->name, data, 80);
+	strncpy(new->name, data, MAX_USRNAME_LEN);
 	new -> adjacencies = malloc(sizeof(aNode*) * ADJ_UNIT_SIZE);
 	new -> numAdj = 0;
 	new -> size = ADJ_UNIT_SIZE;
@@ -41,8 +41,8 @@ void addAdjacency(aNode* src, aNode* dst){
 	 */
 	if(src -> numAdj >= src -> size){
 		src -> size += ADJ_UNIT_SIZE;
-		src -> adjacencies = realloc(src -> adjacencies, src -> size);
+		src -> adjacencies = realloc(src -> adjacencies, 
+				sizeof(aNode*)* (src -> size));
 	}
-
 	src -> adjacencies[(src -> numAdj)++] = dst;
 }
