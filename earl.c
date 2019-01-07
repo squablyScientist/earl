@@ -62,39 +62,48 @@ int main(int argc, char** argv)
 	// ENTRYs for hsearch entry insertions and query.
 	ENTRY src;
 	ENTRY dst;
-	dst.key = alloca(80);
+	dst.key = alloca(MAX_USRNAME_LEN);
 	dst.data = alloca(sizeof(aNode));
-	src.key = alloca(80);
+	src.key = alloca(MAX_USRNAME_LEN);
 	src.data = alloca(sizeof(aNode));
+
+	// Buffer to hold tokens for multivalue alias entries e.g. vapehouse
+	char* token;
 
 	// Iterates over every record in the db, recording all adjacencies.
 	while(cursor->get(cursor, &key, &val, DB_NEXT) == 0){
-		
-		// TODO: make this handle lists of users 
-		strncpy(src.key, (char*)val.data, 80);
-		strncpy(dst.key, (char*)key.data, 80);
 
-		// Creates and inserts the src node if it doesn't already exist
-		if(hsearch(src, FIND) == NULL){
-			src.data = newAliasNode(src.key);
-			hsearch(src, ENTER);
+		// Sets up strtok and parses the first token in the aliases
+		token = strtok((char*)val.data, " ,");
+
+		// Performs this loop on each token in the aliases
+		do{
+			strncpy(src.key, token, MAX_USRNAME_LEN);
+			strncpy(dst.key, (char*)key.data, MAX_USRNAME_LEN);
+
+			// Creates and inserts the src node if it doesn't already exist
+			if(hsearch(src, FIND) == NULL){
+				src.data = newAliasNode(src.key);
+				hsearch(src, ENTER);
+			}
+
+			// Creates and inserts the dst node if it doesn't already exist
+			if(hsearch(dst, FIND) == NULL){
+				dst.data = newAliasNode(dst.key);
+				hsearch(dst, ENTER);
+			}
+			
+			// Marks these two nodes as adjacent to eachother(directed)
+			aNode* srcNode = (aNode*)hsearch(src,FIND)->data;
+			aNode* dstNode = (aNode*)hsearch(dst,FIND)->data;
+			addAdjacency(srcNode, dstNode);
+
+			// Makes new memory for the keys since the intial memory must be
+			// preserved for hsearch to work properly.
+			dst.key = alloca(MAX_USRNAME_LEN);
+			src.key = alloca(MAX_USRNAME_LEN);
 		}
-
-		// Creates and inserts the dst node if it doesn't already exist
-		if(hsearch(dst, FIND) == NULL){
-			dst.data = newAliasNode(dst.key);
-			hsearch(dst, ENTER);
-		}
-		
-		// Marks these two nodes as adjacent to eachother(directed)
-		aNode* srcNode = (aNode*)hsearch(src,FIND)->data;
-		aNode* dstNode = (aNode*)hsearch(dst,FIND)->data;
-		addAdjacency(srcNode, dstNode);
-
-		// Makes new memory for the keys since the intial memory must be
-		// preserved for hsearch to work properly.
-		dst.key = alloca(80);
-		src.key = alloca(80);
+		while((token = strtok(NULL, " ,")));
 	}
 
 	// Finds the aNode of the root of the tree(the user / alias being queried
