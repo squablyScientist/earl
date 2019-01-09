@@ -11,3 +11,11 @@ debug: $(objects) aNode.h
 
 clean:
 	rm *.o $(executable)
+install:
+	cp earl /usr/local/bin 
+	cp earl.1 /usr/local/share/man/man1
+	mandb
+uninstall:
+	rm /usr/local/bin/earl 
+	rm /usr/local/share/man/man1/earl.1
+	mandb
