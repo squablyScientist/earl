@@ -150,27 +150,39 @@ int main(int argc, char** argv)
 	// about)
 	ENTRY rootEntry;
 	rootEntry.key = usrname;
-	aNode* root = (aNode*)(hsearch(rootEntry, FIND)->data);
+
+	// Retrieves the ENTRY from the htab 
+	ENTRY* rootqEntry = hsearch(rootEntry, FIND);
+
+	// Makes sure that such an entry exists
+	if(rootqEntry == NULL){
+		fprintf(stderr,
+				"Error: '%s' matches no entry in %s\n", usrname, dbFilename);
+		return 1;
+	}
+
+	// Access the aNode from the ENTRY retrieved from the htab
+	aNode* root = (aNode*)(rootqEntry->data);
 
 	// Prints the end username for referece in the output
 	printf("%s: ", usrname);
 
 	
-	if(root != NULL){
 
-		// Prints out a list of all the aliases that direct to root
-		for(size_t i = 0; i < root->numAdj; i++){
+	// Prints out a list of all the aliases that direct to root
+	for(size_t i = 0; i < root->numAdj; i++){
 
-			// This loop "flattens" the tree, making all neighbors' neighbors of
-			// root direct neighbors of root. Since those neighbors will then be
-			// examined this simulates recursion. This is the only use for the
-			// tree in the first place, and thus it is ok that this is a
-			// destructive operation.
-			for(size_t j = 0; j < root->adjacencies[i]->numAdj; j++){
-				addAdjacency(root, root->adjacencies[i]->adjacencies[j]);
-			}
-			printf("%s ", root->adjacencies[i]->name);
+		/*
+		 * This loop "flattens" the tree, making all neighbors' neighbors of
+		 * root direct neighbors of root. Since those neighbors will then be
+		 * examined this simulates recursion. This is the only use for the
+		 * tree in the first place, and thus it is ok that this is a
+		 * destructive operation.
+		 */
+		for(size_t j = 0; j < root->adjacencies[i]->numAdj; j++){
+			addAdjacency(root, root->adjacencies[i]->adjacencies[j]);
 		}
+		printf("%s ", root->adjacencies[i]->name);
 	}
 	putchar('\n');
 
