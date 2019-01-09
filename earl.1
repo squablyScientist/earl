@@ -1,0 +1,26 @@
+.TH earl 1 2019-01-06 
+.SH NAME
+earl \- \fBe\fRmail \fBa\fRlias \fBr\fReverse \fBl\fRookup
+.SH SYNOPSIS
+.B earl
+-i
+.I dbfilename
+-u 
+.I "usr/alias" 
+.SH DESCRIPTION
+.B earl
+is a tool for finding all of the email aliases that would direct to either a user or another alias.
+The underlying db that earl can parse is a hash map Berkely db (can be interacted with using functions described in \fIdb\fR(3)).
+For more information on how exactly these mail aliases are stored, see \fIhttp://support.real-time.com/linux/email/server/aliases.html\fR
+.SS Usage
+\fIdbfilename\fR is the filename of the underlying db, and \fIusr/alias\fR is the username or alias of interest. 
+
+.SS Output
+.TP 
+The output format of earl is as follows: 
+\fIusr/alias\fR: [\fIalias\fR...]
+.PP
+Where each \fIalias\fR is space separated and represents some alias that will direct back to \fIusr/alias\fR
+.SH SEE ALSO
+\fIdb\fR(3)
+
