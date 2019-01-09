@@ -5,22 +5,60 @@
 #include <sys/types.h>
 #include <db.h>
 #include <search.h>
-#include <stdlib.h>
+#include <unistd.h>
 #define _GNU_SOURCE
 
 #include "aNode.h"
 
 #define DATABASE "names.db"
 #define BUFFER_SIZE 256
+#define USERNAME_GIVEN 0x1
+#define FILENAME_GIVEN 0x2
+
+/**
+ * Std usage w/ a custom message
+ */
+void usage(char* msg){
+	fprintf(stderr, "%s\n"
+			"Usage: earl -i <db filename> -u <username / alias>\n", msg);
+}
 
 int main(int argc, char** argv)
 {
 
-	if(argc != 2){
-		fprintf(stderr,"Usage: earl <username or alias>\n");
-		exit(1);
+
+	int option;
+	char* usrname;
+	char* dbFilename;
+
+	// 8 bits for the options that could be given. 
+	unsigned char optionsGiven = 0;
+
+	while((option = getopt(argc, argv, "i:u:")) != -1){
+		switch(option){
+			case 'i':
+				dbFilename = optarg;
+				optionsGiven |= FILENAME_GIVEN;
+				break;
+			case 'u':
+				usrname = optarg;
+				optionsGiven |= USERNAME_GIVEN;
+				break;
+			case '?':
+				return 1;
+		}
 	}
-	
+
+	if(!(optionsGiven & FILENAME_GIVEN)){
+		usage("filename of aliases db needed");
+		return 1;
+	}
+
+	if(!(optionsGiven & USERNAME_GIVEN)){
+		usage("username / alias needed");
+		return 1;
+	}
+
 	// DB struct pointer that will represent the alias DB
 	DB* aliases;
 
@@ -30,7 +68,7 @@ int main(int argc, char** argv)
 
 	// Allocates mem for and reads in the DB from the file
 	db_create(&aliases, NULL, 0);
-	aliases->open(aliases, NULL, DATABASE, NULL, DB_HASH, 0, 0);
+	aliases->open(aliases, NULL, dbFilename, NULL, DB_HASH, 0, 0);
 
 	// Allocates and binds the cursor to the DB
 	aliases->cursor(aliases, NULL, &cursor, 0);
@@ -111,11 +149,11 @@ int main(int argc, char** argv)
 	// Finds the aNode of the root of the tree(the user / alias being queried
 	// about)
 	ENTRY rootEntry;
-	rootEntry.key = argv[1];
+	rootEntry.key = usrname;
 	aNode* root = (aNode*)(hsearch(rootEntry, FIND)->data);
 
 	// Prints the end username for referece in the output
-	printf("%s: ", argv[1]);
+	printf("%s: ", usrname);
 
 	
 	if(root != NULL){
